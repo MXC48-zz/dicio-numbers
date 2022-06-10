@@ -142,7 +142,7 @@ public class EnglishNumberExtractor {
                 ts.movePositionForwardBy(-1); // rewind
                 return null;
             } else {
-                return n.multiply(negative ? -1 : 1).setOrdinal(n.isOrdinal());
+                return n.multiply(negative ? -1 : 1).withOrdinal(n.isOrdinal());
             }
 
         }
@@ -235,7 +235,7 @@ public class EnglishNumberExtractor {
             // parse years (1001 to 2099) in the particular forms (but xx-hundred is handled below)
             final Number secondGroup = numberYearSecondGroup(allowOrdinal);
             if (secondGroup != null) {
-                return n.multiply(100).plus(secondGroup).setOrdinal(secondGroup.isOrdinal());
+                return n.multiply(100).plus(secondGroup).withOrdinal(secondGroup.isOrdinal());
             }
         }
 
@@ -247,7 +247,7 @@ public class EnglishNumberExtractor {
                 if (allowOrdinal || !ordinal) {
                     // prevent ordinal numbers if allowOrdinal is false
                     ts.movePositionForwardBy(nextNotIgnore + 1);
-                    return n.multiply(100).setOrdinal(ordinal);
+                    return n.multiply(100).withOrdinal(ordinal);
                 }
             }
         }
@@ -268,7 +268,7 @@ public class EnglishNumberExtractor {
                 if (ts.get(0).hasCategory("ordinal_suffix")) {
                     if (allowOrdinal) {
                         ts.movePositionForwardBy(1);
-                        return n.setOrdinal(true); // ordinal number, e.g. 20,056,789th
+                        return n.withOrdinal(true); // ordinal number, e.g. 20,056,789th
                     } else {
                         ts.setPosition(originalPosition);
                         return null; // found ordinal number, revert since allowOrdinal is false
@@ -295,7 +295,7 @@ public class EnglishNumberExtractor {
                 // o/oh/nought/zero/0 + digit, e.g. (sixteen) oh one -> (16)01
                 // prevent ordinal number if allowOrdinal is false, e.g. (eighteen) oh second
                 ts.movePositionForwardBy(digitIndex + 1);
-                return ts.get(-1).getNumber().setOrdinal(ordinal);
+                return ts.get(-1).getNumber().withOrdinal(ordinal);
             }
 
         } else if (ts.get(nextNotIgnore).hasCategory("teen")) {
@@ -305,7 +305,7 @@ public class EnglishNumberExtractor {
                 return null; // do not allow ordinal number if allowOrdinal is false
             } else {
                 ts.movePositionForwardBy(nextNotIgnore + 1);
-                return ts.get(-1).getNumber().setOrdinal(ordinal);
+                return ts.get(-1).getNumber().withOrdinal(ordinal);
             }
 
         } else if (ts.get(nextNotIgnore).getValue().length() == 2
@@ -316,7 +316,7 @@ public class EnglishNumberExtractor {
                 return null; // do not allow raw number + st/nd/rd/th if allowOrdinal is false
             } else {
                 ts.movePositionForwardBy(nextNotIgnore + (ordinal ? 2 : 1));
-                return ts.get(ordinal ? -2 : -1).getNumber().setOrdinal(ordinal);
+                return ts.get(ordinal ? -2 : -1).getNumber().withOrdinal(ordinal);
             }
 
         } else if (ts.get(nextNotIgnore).hasCategory("tens")) {
@@ -326,7 +326,7 @@ public class EnglishNumberExtractor {
                 if (allowOrdinal) {
                     // nothing follows an ordinal number, e.g. (twenty) twentieth -> 2020th
                     ts.movePositionForwardBy(nextNotIgnore + 1);
-                    return tens.setOrdinal(true);
+                    return tens.withOrdinal(true);
                 } else {
                     return null; // prevent ordinal numbers if allowOrdinal is false
                 }
@@ -338,7 +338,7 @@ public class EnglishNumberExtractor {
             if (ts.get(digitIndex).hasCategory("digit") && (allowOrdinal || !ordinal)) {
                 // do not consider ordinal digit if allowOrdinal is false
                 ts.movePositionForwardBy(digitIndex + 1);
-                return tens.plus(ts.get(-1).getNumber()).setOrdinal(ordinal);
+                return tens.plus(ts.get(-1).getNumber()).withOrdinal(ordinal);
             } else {
                 return tens; // digit is optional, e.g. (seventeen) fifty -> (17)50
             }
@@ -373,7 +373,7 @@ public class EnglishNumberExtractor {
                             return null;
                         }
                         ts.movePositionForwardBy(nextNotIgnore + 2);
-                        return ts.get(-2).getNumber().setOrdinal(true);
+                        return ts.get(-2).getNumber().withOrdinal(true);
                     }
                     ts.movePositionForwardBy(nextNotIgnore + 1);
                     first = ts.get(-1).getNumber(); // raw number group, e.g. 123042 million
@@ -390,7 +390,7 @@ public class EnglishNumberExtractor {
             if (second != null) {
                 first = first.plus(second);
                 if (second.isOrdinal()) {
-                    return first.setOrdinal(true); // nothing else follows an ordinal number
+                    return first.withOrdinal(true); // nothing else follows an ordinal number
                 }
             }
         }
@@ -405,11 +405,11 @@ public class EnglishNumberExtractor {
                 ts.movePositionForwardBy(nextNotIgnore + 1);
                 if (first == null) {
                     // the multiplier alone, e.g. a million
-                    return multiplier.setOrdinal(ordinal);
+                    return multiplier.withOrdinal(ordinal);
                 } else {
                     // number smaller than 1000000 followed by a multiplier,
                     // e.g. thirteen thousand billion
-                    return multiplier.multiply(first).setOrdinal(ordinal);
+                    return multiplier.multiply(first).withOrdinal(ordinal);
                 }
             }
         } else {
